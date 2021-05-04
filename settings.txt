@@ -1,0 +1,50 @@
+1. Run GOOS=linux GOARCH=amd64 go build main.go
+2. ssh root@IP_ADDRESS
+3. adduser novenadmin
+4. visudo
+5. Copy root settings to novenadmin user
+6. su novenadmin
+7. scp main novenadmin@IP_ADDRESS:/tmp 
+8. mv /tmp/main .
+
+******* NGINX *******
+9. apt-get update
+10. apt-get install nginx
+11. ufw app list
+12. ufw allow 'Nginx HTTP'
+13. ufw allow 'OpenSSH'
+14. ufw enable
+15. ufw status
+16. systemctl status nginx
+
+******** Service *******
+17. nano /etc/systemd/system/noven.service
+[Unit]
+Description=Go sample web app
+After=multi-user.target
+[Service]
+User=novenadmin
+Group=novenadmin
+RestartSec=5s
+ExecStart=/home/novenadmin/main
+[Install]
+WantedBy=multi-user.target
+
+18. sudo systemctl start noven
+19. sudo systemctl enable noven
+20. sudo systemctl status noven
+
+********* Sites available/enabled *******
+21. nano /etc/nginx/sites-available/noven
+server {
+	listen 80;
+	listen [::]:80;
+	server_name 46.101.114.63;
+	location / {
+	        proxy_pass http://localhost:9990;
+    }
+}
+22. ln -s /etc/nginx/sites-available/noven /etc/nginx/sites-enabled/
+23. nginx -t
+24. systemctl daemon-reload
+25. systemctl reload nginx 
